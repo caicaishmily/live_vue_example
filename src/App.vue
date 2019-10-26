@@ -2,11 +2,11 @@
   <div id="app">
     <h3 v-if="loading">Loading...</h3>
     <ul v-if="!loading">
-      <li>
-        <img style="width: 100%;" src="https://gss3.bdstatic.com/7Po3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike180%2C5%2C5%2C180%2C60/sign=8de7d69cb87eca80060831b5f04afcb8/e61190ef76c6a7eff1edd899f5faaf51f2de6641.jpg" alt="">
+      <li v-for="item in girls" :key="item.avatar">
+        <img style="width: 100%;" :src="item.avatar" />
         <div class="list-footer">
-          <span>朴信惠</span>
-          <button @click="like(1)" :id="1">Like</button>
+          <span>{{ item.name }}</span>
+          <button @click="like(item.id)" :id="item.id">Like{{item.like}}</button>
         </div>
       </li>
     </ul>
@@ -21,14 +21,20 @@
     data() {
       return {
         loading: true,
-        all_videos: []
+        test: "test",
+        girls: []
       }
     },
     apollo: {
-      all_videos: gql`query {
-         allVideos {
-          link
-        }
+      girls: gql`query {
+          girls{
+            age
+            id
+            name
+            avatar
+            like
+            dislike
+          }
       }`,
     },
     methods: {
@@ -37,13 +43,20 @@
       }
     },
     async mounted() {
-      this.all_videos = await this.$apollo.query({
+      let result = await this.$apollo.query({
         query: gql`query {
-          allVideos {
-            link
+          girls{
+            age
+            id
+            name
+            avatar
+            like
+            dislike
           }
         }`
       })
+      // console.log(result)
+      this.girls = result.data.girls
       this.loading = false
     }
   }
