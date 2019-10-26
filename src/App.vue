@@ -6,7 +6,7 @@
         <img style="width: 100%;" :src="item.avatar" />
         <div class="list-footer">
           <span>{{ item.name }}</span>
-          <button @click="like(item.id)" :id="item.id">Like{{item.like}}</button>
+          <button @click="like(item.id)" :id="item.id">Like<span style="margin-left: 5px;">{{item.like}}</span></button>
         </div>
       </li>
     </ul>
@@ -25,21 +25,25 @@
         girls: []
       }
     },
-    apollo: {
-      girls: gql`query {
-          girls{
-            age
-            id
-            name
-            avatar
-            like
-            dislike
-          }
-      }`,
-    },
     methods: {
-      like: function(event) {
-        console.log(event)
+      async like(id) {
+        let result = await this.$apollo.mutate({
+          mutation: gql`mutation ($id: Float!) {
+             like(id: $id) {
+              id
+              age
+              like
+              name
+              avatar
+              dislike
+            }
+          }`,
+          variables: {
+            id: Number.parseInt(id),
+          },
+        })
+
+        this.girls = this.girls.map(item => item.id == id ? result.data.like : item).sort(item => item.id)
       }
     },
     async mounted() {
@@ -55,8 +59,7 @@
           }
         }`
       })
-      // console.log(result)
-      this.girls = result.data.girls
+      this.girls = result.data.girls.sort(item => item.id)
       this.loading = false
     }
   }
@@ -77,9 +80,25 @@
     padding: 0;
   }
 
+  #app ul li {
+    margin-bottom: 10px;
+    background: #eee;
+    padding: 10px;
+  }
+
   .list-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .list-footer button {
+    width: 60px;
+    background: red;
+    color: #fff;
+    height: 30px;
+    border: none;
+    box-shadow: none;
+    border-radius: 3px;
   }
 </style>
